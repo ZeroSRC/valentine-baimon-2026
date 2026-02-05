@@ -146,7 +146,13 @@ const openEnvelope = () => {
     envelopeOpened.value = true
     setTimeout(() => {
       letterPulled.value = true
-    }, 600)
+    }, 500)
+  }
+}
+
+const toggleZoom = () => {
+  if (letterPulled.value) {
+    isLetterZoomed.value = !isLetterZoomed.value
   }
 }
 
@@ -262,7 +268,7 @@ onUnmounted(() => {
                     <div class="envelope-back"></div>
                     
                     <!-- Letter -->
-                    <div class="letter" :class="{ pulled: letterPulled }">
+                    <div class="letter" :class="{ pulled: letterPulled, 'clickable': letterPulled }" @click.stop="toggleZoom">
                       <div class="letter-paper">
                         <div class="letter-header">
                           <span>💌</span>
@@ -272,6 +278,9 @@ onUnmounted(() => {
                           <span>💕</span>
                           <span>∿∿∿</span>
                           <span>💕</span>
+                        </div>
+                        <div class="zoom-hint" v-if="letterPulled && !isLetterZoomed">
+                          <span>🔍 แตะเพื่ออ่าน</span>
                         </div>
                       </div>
                     </div>
@@ -297,6 +306,24 @@ onUnmounted(() => {
                   <span v-for="i in 12" :key="'celeb-'+i" class="celeb-heart" :style="{ '--i': i }">💖</span>
                 </div>
               </div>
+              
+              <!-- Zoomed Letter Overlay -->
+              <Transition name="zoom-fade">
+                <div v-if="isLetterZoomed" class="letter-overlay" @click="toggleZoom">
+                  <div class="zoomed-letter-paper" @click.stop>
+                    <button class="close-btn" @click="toggleZoom">×</button>
+                    <div class="letter-header">
+                      <span>💌</span>
+                    </div>
+                    <p class="letter-text expanded">{{ page.letterMessage }}</p>
+                    <div class="letter-footer">
+                      <span>💕</span>
+                      <span>รักนะจุ๊บๆ</span>
+                      <span>💕</span>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
             </div>
           </div>
         </TransitionGroup>
@@ -1030,16 +1057,17 @@ body {
   }
 }
 
-/* ====== Premium Envelope Styles ====== */
+/* ====== Standard Premium Envelope ====== */
 .envelope-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 2rem;
   padding: 2rem;
   text-align: center;
   animation: contentFadeIn 0.8s ease-out 0.2s both;
+  position: relative;
   z-index: 10;
 }
 
@@ -1050,11 +1078,12 @@ body {
   color: white;
   font-size: 1rem;
   text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.25);
   padding: 0.6rem 1.2rem;
   border-radius: 50px;
   backdrop-filter: blur(5px);
   animation: hintBounce 2s ease-in-out infinite;
+  z-index: 50;
 }
 
 .hint-icon {
@@ -1071,274 +1100,324 @@ body {
   50% { transform: scale(1.03); }
 }
 
-.envelope-scene {
-  position: relative;
-  padding: 20px;
-}
-
 .envelope-wrapper {
-  cursor: pointer;
-  perspective: 1500px;
-  transform-style: preserve-3d;
-}
-
-.envelope {
   position: relative;
   width: 300px;
-  height: 220px;
+  height: 200px;
   max-width: 85vw;
-  transform-style: preserve-3d;
-  transition: transform 0.3s ease;
-  overflow: hidden;
+  perspective: 1500px;
+  cursor: pointer;
 }
 
-.envelope.opened {
-  overflow: visible;
+/* Base Envelope Container */
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
 }
 
 .envelope:hover:not(.opened) {
-  transform: scale(1.02) rotateY(-2deg);
+  transform: rotate(-2deg) scale(1.02);
 }
 
-/* Envelope Back */
+/* 1. Envelope Back (Interior) */
 .envelope-back {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #B83227 0%, #922B21 100%);
+  background: #C0392B;
   border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
   z-index: 1;
 }
 
-/* Letter */
+/* 2. Letter - Sits inside */
 .letter {
   position: absolute;
-  top: 40px;
-  left: 25px;
-  right: 25px;
-  height: 220px;
+  top: 10px;
+  left: 15px;
+  right: 15px;
+  height: 180px;
+  background: linear-gradient(180deg, #FFFEF9 0%, #FFF5E8 100%);
+  border-radius: 6px;
   z-index: 5;
-  transform: translateY(80px);
-  transition: transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s; /* Slight delay */
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
-.envelope.opened .letter {
-  z-index: 50;
-}
-
+/* Ensure pulled letter is interactive */
 .letter.pulled {
-  transform: translateY(-200px);
+  transform: translateY(-160px) translateZ(100px);
+  z-index: 100 !important;
+  pointer-events: auto;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Smooth transition */
 }
 
+/* HOVER EFFECT: Zoom / Expand on Hover */
+.letter.pulled:hover {
+  transform: translateY(-200px) scale(1.5) translateZ(200px);
+  z-index: 200 !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  /* Allow height to grow to fit text */
+  height: auto; 
+  overflow: visible;
+}
+
+/* Adjust paper content for hover state */
+.letter.pulled:hover .letter-paper {
+  overflow: visible;
+  height: auto;
+  min-height: 100%;
+  padding-bottom: 2rem; 
+}
+
+/* Letter Content */
 .letter-paper {
   width: 100%;
   height: 100%;
-  background: 
-    linear-gradient(180deg, #FFFEF9 0%, #FFF8F0 50%, #FFF5E8 100%);
+  background: linear-gradient(180deg, #FFFEF9 0%, #FFF5E8 100%);
   border-radius: 8px;
   padding: 1rem;
   box-sizing: border-box;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(139, 69, 19, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   overflow: hidden;
+  transition: all 0.4s ease;
 }
 
-/* Decorative border */
+/* Hide fade mask on hover to read better */
+.letter.pulled:hover .letter-paper::after {
+  opacity: 0;
+  display: none; /* Completely remove it to avoid blocking clicks/selection */
+}
+
+/* Expand text on hover */
+.letter.pulled:hover .letter-text {
+  -webkit-line-clamp: unset; /* Show all lines */
+  overflow: visible;
+  height: auto;
+  font-size: 0.9rem; /* Increase font size slightly */
+}
+
+/* ... rest of existing CSS ... */
+.letter-paper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), #FFF5E8);
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.3s;
+}
+
 .letter-paper::before {
   content: '';
   position: absolute;
-  inset: 8px;
-  border: 2px dashed rgba(139, 69, 19, 0.15);
+  inset: 6px;
+  border: 1px dashed rgba(139, 69, 19, 0.2);
   border-radius: 4px;
   pointer-events: none;
 }
 
-/* Paper texture lines */
-.letter-paper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent 0px,
-    transparent 20px,
-    rgba(200, 180, 160, 0.08) 20px,
-    rgba(200, 180, 160, 0.08) 21px
-  );
-  pointer-events: none;
-}
-
-.letter-header {
-  font-size: 1.5rem;
-  margin-bottom: 0.3rem;
-}
-
 .letter-text {
   color: #6B4423;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  font-size: 0.8rem;
+  line-height: 1.5;
   text-align: center;
-  white-space: pre-line;
+  white-space: pre-wrap;
   margin: 0;
   font-style: italic;
   position: relative;
-  z-index: 1;
-  flex: 1;
+  z-index: 2;
+  width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  transition: all 0.3s ease;
 }
 
-.letter-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #8B4513;
-  margin-top: 0.3rem;
+.zoom-hint {
+  /* Hide hint on hover since we are zooming */
+  transition: opacity 0.3s;
+}
+.letter.pulled:hover .zoom-hint {
+  opacity: 0;
 }
 
-/* Envelope Front */
-.envelope-front {
+/* Zoom Overlay Styles */
+.letter.clickable {
+  cursor: zoom-in;
+}
+
+.zoom-hint {
   position: absolute;
-  bottom: 0;
+  bottom: 5px;
   left: 0;
   right: 0;
-  height: 140px;
-  background: 
-    linear-gradient(180deg, #E74C3C 0%, #C0392B 50%, #A93226 100%);
-  border-radius: 0 0 12px 12px;
-  z-index: 20;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255,255,255,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #d35400;
+  text-shadow: 0 0 2px rgba(255,255,255,0.8);
+  animation: pulse 2s infinite;
+  z-index: 10;
 }
 
-/* V-shape inner shadow */
-.envelope-front::before {
-  content: '';
+/* ... existing overlay styles ... */
+
+.zoomed-letter-paper {
+  background: linear-gradient(180deg, #FFFEFA 0%, #FFF8F0 100%);
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh; /* Limit height */
+  overflow-y: auto; /* Allow scrolling */
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  transform-origin: center;
+  animation: zoomPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Custom Scrollbar for zoomed letter */
+.zoomed-letter-paper::-webkit-scrollbar {
+  width: 6px;
+}
+.zoomed-letter-paper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.zoomed-letter-paper::-webkit-scrollbar-thumb {
+  background: rgba(139, 69, 19, 0.2);
+  border-radius: 10px;
+}
+
+.letter-text.expanded {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: #5D4037;
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+.letter-decoration, .letter-header, .letter-footer {
+  font-size: 1.2rem;
+  display: flex;
+  gap: 5px;
+}
+
+/* 3. Envelope Front (Pocket) */
+.envelope-front {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #E74C3C 0%, #CB4335 100%);
+  border-radius: 12px;
+  z-index: 10;
+  /* Deep V Cut */
+  clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+  /* Add a pseudo-element for depth/shadow if needed, but clip-path crops it. 
+     Instead, usage solid color or gradient is safer. */
+}
+
+/* 4. Envelope Flap (Lid) */
+.envelope-flap {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 50px;
-  background: 
-    linear-gradient(to right bottom, transparent 49%, rgba(0,0,0,0.08) 50%),
-    linear-gradient(to left bottom, transparent 49%, rgba(0,0,0,0.08) 50%);
-  background-size: 50% 100%;
-  background-position: left, right;
-  background-repeat: no-repeat;
+  height: 110px; /* Extends past half-way */
+  background: linear-gradient(0deg, #C0392B 0%, #D98880 100%);
+  /* Triangle pointing DOWN */
+  clip-path: polygon(0 0, 50% 100%, 100% 0);
+  transform-origin: top center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.6s step-end;
+  z-index: 20;
 }
 
-/* Wax Seal */
+/* Open Animation */
+.envelope.opened .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1; /* Move behind back when open */
+}
+
+/* 5. Wax Seal - Attached to Flap Tip */
 .wax-seal {
-  width: 55px;
-  height: 55px;
-  background: 
-    radial-gradient(circle at 30% 30%, #C0392B 0%, #8B0000 50%, #5C0000 100%);
+  position: absolute;
+  bottom: 10px; /* Near bottom tip of flap */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle at 35% 35%, #922B21 0%, #641E16 100%);
   border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.4),
-    inset 0 2px 4px rgba(255,255,255,0.2),
-    inset 0 -2px 4px rgba(0,0,0,0.3);
-  position: relative;
-  z-index: 30;
-  transition: all 0.5s ease;
-}
-
-.wax-seal::before {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.seal-heart {
-  color: #FFD700;
-  font-size: 1.5rem;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-}
-
-.wax-seal.broken {
-  transform: scale(0.8) rotate(15deg);
-  opacity: 0;
-}
-
-/* Envelope Flap */
-.envelope-flap {
-  position: absolute;
-  top: 80px;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(0deg, #E74C3C 0%, #EC7063 100%);
-  clip-path: polygon(0 100%, 50% 0, 100% 100%);
-  transform-origin: bottom center;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 25;
 }
 
-.flap-inner {
-  position: absolute;
-  bottom: 0;
-  left: 5%;
-  right: 5%;
-  height: 90%;
-  background: linear-gradient(0deg, #D44637 0%, #E74C3C 100%);
-  clip-path: polygon(0 100%, 50% 5%, 100% 100%);
+.seal-heart {
+  font-size: 1.4rem;
+  color: #D4AC0D; /* Gold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.envelope.opened .envelope-flap {
-  transform: rotateX(-170deg);
-  z-index: 2;
+.envelope.opened .wax-seal {
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-/* Celebration Hearts */
+/* Celebrations */
 .celebration {
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  z-index: 60;
 }
 
 .celeb-heart {
   position: absolute;
   font-size: 1.5rem;
-  animation: celebExplode 1.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* Add burst logic identical to previous */
+/* Animation Keyframes - Simple Burst */
+.celeb-heart {
+  animation: celebBurst 1s ease-out forwards;
   animation-delay: calc(var(--i) * 0.05s);
 }
 
-@keyframes celebExplode {
-  0% {
-    transform: translate(0, 0) scale(0);
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
+@keyframes celebBurst {
+  0% { transform: translate(0, 0) scale(0); opacity: 1; }
   100% {
-    transform: 
-      translate(
-        calc(cos(var(--i) * 30deg) * 120px), 
-        calc(sin(var(--i) * 30deg) * 120px - 50px)
-      ) 
-      scale(1) 
-      rotate(calc(var(--i) * 45deg));
+    transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(45deg);
     opacity: 0;
   }
 }
 
-/* Fallback for browsers without cos/sin */
+/* Fallback for browsers */
 .celeb-heart:nth-child(1) { --tx: 100px; --ty: -30px; }
 .celeb-heart:nth-child(2) { --tx: 70px; --ty: -80px; }
 .celeb-heart:nth-child(3) { --tx: 0px; --ty: -100px; }
@@ -1352,59 +1431,106 @@ body {
 .celeb-heart:nth-child(11) { --tx: 50px; --ty: -90px; }
 .celeb-heart:nth-child(12) { --tx: -50px; --ty: -90px; }
 
-.celeb-heart {
-  animation: celebSimple 1s ease-out forwards;
-  animation-delay: calc(var(--i) * 0.04s);
-}
-
-@keyframes celebSimple {
-  0% {
-    transform: translate(0, 0) scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--tx), var(--ty)) scale(1.2);
-    opacity: 0;
-  }
-}
-
-/* Mobile adjustments */
 @media (max-width: 600px) {
-  .envelope {
-    width: 260px;
-    height: 190px;
-  }
-  
-  .envelope-front {
-    height: 120px;
-  }
-  
-  .envelope-flap {
-    top: 70px;
-    height: 70px;
-  }
-  
-  .letter {
-    height: 190px;
-    left: 20px;
-    right: 20px;
-  }
-  
-  .letter.pulled {
-    transform: translateY(-170px);
-  }
-  
-  .letter-text {
-    font-size: 0.8rem;
-  }
-  
-  .wax-seal {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .seal-heart {
-    font-size: 1.2rem;
-  }
+  .envelope-wrapper { width: 280px; height: 180px; }
+  .envelope-flap { height: 100px; clip-path: polygon(0 0, 50% 100%, 100% 0); }
+  .letter { height: 160px; }
+  .letter.pulled { transform: translateY(-130px); }
+  .envelope-front { clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%); }
+}
+
+/* Zoom Overlay Styles */
+.letter.clickable {
+  cursor: zoom-in;
+}
+
+.zoom-hint {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  color: rgba(139, 69, 19, 0.5);
+  animation: pulse 2s infinite;
+}
+
+.letter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.zoomed-letter-paper {
+  background: linear-gradient(180deg, #FFFEFA 0%, #FFF8F0 100%);
+  width: 100%;
+  max-width: 500px;
+  min-height: 300px;
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  transform-origin: center;
+  animation: zoomPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.zoomed-letter-paper::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed rgba(139, 69, 19, 0.2);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.letter-text.expanded {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: #5D4037;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #8B4513;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+  z-index: 10;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+/* Zoom Transitions */
+.zoom-fade-enter-active,
+.zoom-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.zoom-fade-enter-from,
+.zoom-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes zoomPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 </style>
