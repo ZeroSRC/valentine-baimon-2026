@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
 // States: 'question' -> 'password' -> 'story'
 const step = ref('question')
@@ -13,44 +13,50 @@ const envelopeOpened = ref(false)
 const letterPulled = ref(false)
 
 // Hardcoded password - น่ารัก!
-const SECRET_PASSWORD = 'iloveyou'
+const SECRET_PASSWORD = 'รักตัวเล็กที่สุดในโลก'
+
+
 
 // Story pages - แก้ไขข้อมูลตรงนี้ได้เลย!
 const storyPages = [
   {
-    bgImage: '/beach_dance_art.png',
-    title: 'ถ่ายรูปให้กันที่คาเฟ่ ☕',
-    text: 'จำได้ไหม... วันนั้นที่เราถ่ายรูปให้กัน\nยิ้มหวานๆ ท่าทางน่ารักๆ\nทุกช็อตเต็มไปด้วยความสุข 💕',
+    bgImage: '/Gemini_Generated_Image_ybj2jkybj2jkybj2.png',
+    title: 'ครั้งแรกที่ตัวเล็กถ่ายรูปให้พี่ ☕',
+    text: 'ครั้งแรกที่พี่ได้ถ่ายรูปให้ตัวเล็กและตัวเล็กก็ถ่าย\nให้พี่พี่มีความสุขมากเลย ถึงแม้จะเป็นอะไรที่พี่ไม่เคยทำ 💕',
     isAnimated: true,
-    imageSlot: true
+    imageSlot: false,
+    image: '/Gemini_Generated_Image_ybj2jkybj2jkybj2.png'
   },
   {
     bgImage: '/beach_dance_art.png',
-    title: 'เต้นรำริมทะเล 💃🌊',
-    text: 'เสียงคลื่นเป็นเพลงประกอบ\nทรายขาวเป็นพื้นเต้น\nและเธอคือคู่เต้นที่ดีที่สุด 🎵',
+    title: 'ครั้งแรกที่ได้ไปเที่ยวกับตัวเล็ก 💃🌊',
+    text: 'ได้พาตัวเล็กไปเที่ยวทะเลครั้งแรก\nตามที่สัญญาไว้ มีความสุขมากๆเลย 🎵',
     isAnimated: true,
-    imageSlot: true
+    imageSlot: false,
+    image: '/beach_dance_art.png'
   },
   {
-    bgImage: '/beach_dance_art.png',
-    title: 'ดินเนอร์บนเรือล่องแม่น้ำ 🚢🍽️',
-    text: 'อาหารอร่อย บรรยากาศโรแมนติก\nวิวสวยริมแม่น้ำยามค่ำคืน\nและคนข้างๆ ที่น่ารักที่สุด 🌙',
+    bgImage: '/Gemini_Generated_Image_zgn4tezgn4tezgn4.png',
+    title: 'ครั้งแรกที่ได้ไปกินข้าวบนเรือ 💃🌊',
+    text: 'อาหารรสชาติเชยๆ วิวก็ไม่สวยเท่าที่คิด\nอย่างเดียวที่ดีคือตัวเล็กสวยตลอดเวลา 🌙',
     isAnimated: true,
-    imageSlot: true
+    imageSlot: false,
+    image: '/Gemini_Generated_Image_zgn4tezgn4tezgn4.png'
   },
   {
-    bgImage: '/beach_dance_art.png',
-    title: 'ดูพระอาทิตย์ขึ้นริมทะเล 🌅',
-    text: 'นั่งดูพระอาทิตย์ขึ้นด้วยกัน\nแสงอรุณสีทองสวยงาม\nเริ่มต้นวันใหม่ที่มีเธออยู่ข้างๆ ☀️',
+    bgImage: '/Gemini_Generated_Image_6v4crk6v4crk6v4c.png',
+    title: 'ครั้งแรกที่ดูพระอาทิตย์ขึ้น 🌅',
+    text: 'นั่งดูพระอาทิตย์ขึ้นด้วยกัน\nเกือบกลับแบบไม่ได้ดูแล้ว\nแต่สุดท้ายก็ได้ดู ☀️',
     isAnimated: true,
-    imageSlot: true
+    imageSlot: false,
+    image: '/Gemini_Generated_Image_6v4crk6v4crk6v4c.png'
   },
   {
     // Envelope Page
     title: 'จดหมายรัก 💌',
     isEnvelope: true,
     isFloralBg: true,
-    letterMessage: 'ถึงคนที่รักที่สุด...\n\nเค้าอยากบอกว่า\nเค้ารักตัวมากนะ ❤️\n\nขอบคุณที่ทุกความทรงจำดีๆ\nตั้งแต่วันแรกจนถึงวันนี้\n\nHappy Valentine\'s Day!\n\n💕 รักตัวเสมอ 💕'
+    letterMessage: 'ถึงตัวเล็กขอบคุณที่เข้ามาในชีวิตพี่นะ ❤️ \nพาพี่ทำอะไรที่พี่ไม่เคยทำไปอีกนานๆ \nถึงแม้ว่าจะเป็นช่วงที่ดีบ้างแย่บ้าง แต่พี่ก็ดีใจที่มีตัวเล็กอยู่ข้างๆ\nพี่รักตัวเล็กที่สุดในโลก\nสุขสันต์วันวาเลนไทน์นะค้าบ'
   }
 ]
 
@@ -167,12 +173,71 @@ const toggleZoom = () => {
   }
 }
 
+const createHeart = (e) => {
+  const heart = document.createElement('div')
+  heart.classList.add('click-heart')
+  heart.innerHTML = '💖'
+  heart.style.left = `${e.clientX}px`
+  heart.style.top = `${e.clientY}px`
+  document.body.appendChild(heart)
+  
+  setTimeout(() => {
+    heart.remove()
+  }, 1000)
+}
+
+
+
+// --- Typewriter Effect ---
+const displayedText = ref('')
+let typeInterval = null
+
+const startTyping = (text) => {
+  if (!text) return
+  clearInterval(typeInterval)
+  displayedText.value = ''
+  let i = 0
+  
+  // Typing speed
+  typeInterval = setInterval(() => {
+    if (i < text.length) {
+      displayedText.value += text.charAt(i)
+      i++
+    } else {
+      clearInterval(typeInterval)
+    }
+  }, 40)
+}
+
+watch(currentPage, (newVal) => {
+  // If we are in story mode (step === 'story') and page has text
+  if (step.value === 'story' && storyPages[newVal] && !storyPages[newVal].isEnvelope) {
+    startTyping(storyPages[newVal].text)
+  }
+})
+
+watch(step, (newVal) => {
+  if (newVal === 'story') {
+    // Start typing first page text when entering story mode
+    setTimeout(() => {
+       if (storyPages[0] && !storyPages[0].isEnvelope) {
+         startTyping(storyPages[0].text)
+       }
+    }, 1000)
+  }
+})
+
+
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  window.addEventListener('click', createHeart)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('click', createHeart)
+  clearInterval(typeInterval)
 })
 </script>
 
@@ -185,7 +250,7 @@ onUnmounted(() => {
 
     <!-- Step 1: Question -->
     <div v-if="step === 'question'" class="content fade-in">
-      <h1 class="title">เค้ารักตัวนะ รักเค้ามั้ย? 🥺</h1>
+      <h1 class="title">รักพี่มั้ยยยย ?</h1>
       <img src="/kitty-kitty-heart.gif" alt="Cute Kitty" class="main-image" />
       
       <div class="buttons">
@@ -203,13 +268,13 @@ onUnmounted(() => {
 
     <!-- Step 2: Password -->
     <div v-else-if="step === 'password'" class="content fade-in">
-      <h1 class="title">พิสูจน์ความรักหน่อยสิ! 💕</h1>
+      <h1 class="title">พี่ชอบบอกรักตัวเล็กว่ายังไง! 💕</h1>
       <img src="/kitty-kitty-heart.gif" alt="Cute Kitty" class="main-image" />
       
       <div class="password-section">
         <p class="password-hint">ใส่รหัสลับแห่งความรัก 🔐</p>
         <input 
-          type="password" 
+          type="text" 
           v-model="password" 
           class="password-input"
           placeholder="รหัสผ่าน..."
@@ -272,13 +337,20 @@ onUnmounted(() => {
               </div>
               
               <!-- Optional: Keep generating standard image if you want, but we rely on BG now -->
+              <!-- Optional: Keep generating standard image if you want, but we rely on BG now -->
               <div v-if="page.image" class="story-image-container">
-                <div class="image-glow"></div>
-                <img :src="page.image" :alt="page.title" class="story-image" />
+                <div class="photo-frame">
+                   <div class="pin">📌</div>
+                   <img :src="page.image" :alt="page.title" class="story-image" />
+                   <div class="tape-corner"></div>
+                </div>
               </div>
 
               
-              <p class="story-text">{{ page.text }}</p>
+              <p class="story-text">
+                {{ index === currentPage ? displayedText : page.text }}
+                <span v-if="index === currentPage && displayedText.length < page.text.length" class="cursor">|</span>
+              </p>
             </div>
             
             <!-- Envelope Page - Premium Design -->
@@ -291,6 +363,8 @@ onUnmounted(() => {
                 <span class="hint-icon">👆</span>
                 แตะซองจดหมายเพื่อเปิดอ่าน
               </p>
+
+
               
               <div class="envelope-scene">
                 <div class="envelope-wrapper" @click="openEnvelope">
@@ -411,11 +485,25 @@ body {
   background-color: #FFB7C5;
   font-family: 'Mali', cursive;
   overflow: hidden;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewport='0 0 100 100' style='fill:black;font-size:24px;'><text y='50%'>💘</text></svg>") 16 0, auto;
 }
 
 #app {
   width: 100vw;
   height: 100vh;
+}
+
+.click-heart {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.5rem;
+  animation: floatHeart 1s ease-out forwards;
+  z-index: 9999;
+}
+
+@keyframes floatHeart {
+  0% { transform: scale(0.5) translate(0, 0); opacity: 1; }
+  100% { transform: scale(1.5) translate(0, -50px); opacity: 0; }
 }
 </style>
 
@@ -779,21 +867,53 @@ body {
   }
 }
 
-.story-image {
+.photo-frame {
+  background: white;
+  padding: 15px 15px 40px 15px;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transform: rotate(-3deg);
+  transition: all 0.4s ease;
   position: relative;
-  z-index: 1;
-  width: 280px;
-  max-width: 80vw;
-  height: auto;
-  border-radius: 20px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    0 0 0 5px rgba(255, 255, 255, 0.5);
-  transition: transform 0.4s ease;
+  max-width: 320px;
 }
 
-.story-image:hover {
-  transform: scale(1.05) rotate(2deg);
+.photo-frame:hover {
+  transform: rotate(0deg) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.story-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #eee;
+  /* Remove old styles */
+  border-radius: 0; 
+  box-shadow: none;
+}
+
+.pin {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  z-index: 5;
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+}
+
+.tape-corner {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 80px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(45deg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  display: none; /* simple pin is cleaner, but keeping css just in case */
 }
 
 .story-text {
@@ -1021,6 +1141,21 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* ====== Typewriter Cursor ====== */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  animation: blink 1s infinite;
+  color: #fff;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+
 
 /* ====== Image Slot Styles ====== */
 .image-slot {
