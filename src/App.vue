@@ -18,28 +18,39 @@ const SECRET_PASSWORD = 'iloveyou'
 // Story pages - แก้ไขข้อมูลตรงนี้ได้เลย!
 const storyPages = [
   {
-    image: '/kitty-kitty-heart.gif',
-    title: 'วันแรก',
-    text: 'วันที่เราเจอกัน... 💕',
-    bgGradient: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FFF6F6 100%)'
+    bgImage: '/beach_dance_art.png',
+    title: 'ถ่ายรูปให้กันที่คาเฟ่ ☕',
+    text: 'จำได้ไหม... วันนั้นที่เราถ่ายรูปให้กัน\nยิ้มหวานๆ ท่าทางน่ารักๆ\nทุกช็อตเต็มไปด้วยความสุข 💕',
+    isAnimated: true,
+    imageSlot: true
   },
   {
-    image: 'https://media.tenor.com/gUiu1zyxfzYAAAAi/bear-kiss-bear-kisses.gif',
-    title: 'ความทรงจำ',
-    text: 'ทุกวันที่อยู่ด้วยกัน 🌸',
-    bgGradient: 'linear-gradient(135deg, #FFECD2 0%, #FCB69F 50%, #FF9A9E 100%)'
+    bgImage: '/beach_dance_art.png',
+    title: 'เต้นรำริมทะเล 💃🌊',
+    text: 'เสียงคลื่นเป็นเพลงประกอบ\nทรายขาวเป็นพื้นเต้น\nและเธอคือคู่เต้นที่ดีที่สุด 🎵',
+    isAnimated: true,
+    imageSlot: true
   },
   {
-    image: '/kitty-kitty-heart.gif',
-    title: 'ผ่านมาด้วยกัน',
-    text: 'ทั้งสุขและทุกข์ 🤗',
-    bgGradient: 'linear-gradient(135deg, #A18CD1 0%, #FBC2EB 50%, #FFECD2 100%)'
+    bgImage: '/beach_dance_art.png',
+    title: 'ดินเนอร์บนเรือล่องแม่น้ำ 🚢🍽️',
+    text: 'อาหารอร่อย บรรยากาศโรแมนติก\nวิวสวยริมแม่น้ำยามค่ำคืน\nและคนข้างๆ ที่น่ารักที่สุด 🌙',
+    isAnimated: true,
+    imageSlot: true
   },
   {
+    bgImage: '/beach_dance_art.png',
+    title: 'ดูพระอาทิตย์ขึ้นริมทะเล 🌅',
+    text: 'นั่งดูพระอาทิตย์ขึ้นด้วยกัน\nแสงอรุณสีทองสวยงาม\nเริ่มต้นวันใหม่ที่มีเธออยู่ข้างๆ ☀️',
+    isAnimated: true,
+    imageSlot: true
+  },
+  {
+    // Envelope Page
     title: 'จดหมายรัก 💌',
     isEnvelope: true,
     isFloralBg: true,
-    letterMessage: 'ถึงคนที่รักที่สุด...\n\nเค้าอยากบอกว่า\nเค้ารักตัวมากนะ ❤️\n\nขอบคุณที่อยู่ด้วยกันมาตลอด\nทุกวันที่อยู่กับตัวคือวันที่มีความสุข\n\nHappy Valentine\'s Day!\n\n💕 รักตัวเสมอ 💕'
+    letterMessage: 'ถึงคนที่รักที่สุด...\n\nเค้าอยากบอกว่า\nเค้ารักตัวมากนะ ❤️\n\nขอบคุณที่ทุกความทรงจำดีๆ\nตั้งแต่วันแรกจนถึงวันนี้\n\nHappy Valentine\'s Day!\n\n💕 รักตัวเสมอ 💕'
   }
 ]
 
@@ -226,24 +237,46 @@ onUnmounted(() => {
             :key="index"
             v-show="index === currentPage"
             class="story-page"
-            :class="{ 'floral-garden': page.isFloralBg }"
+            :class="{ 'floral-garden': page.isFloralBg, 'with-bg-image': page.bgImage }"
             :style="{ background: page.bgGradient }"
           >
+            <!-- Background Image -->
+            <div 
+              v-if="page.bgImage" 
+              class="page-bg-image"
+              :class="{ 'animate-pan': page.isAnimated }"
+              :style="{ backgroundImage: `url(${page.bgImage})` }"
+            ></div>
+            
+            <!-- Dark Overlay for Readability -->
+            <div v-if="page.bgImage" class="bg-overlay"></div>
+
             <!-- Floating Flower Petals for Envelope Page -->
             <div v-if="page.isFloralBg" class="flower-petals">
               <span v-for="i in 20" :key="'petal-'+i" class="petal" :style="{ '--i': i }"></span>
             </div>
             
             <!-- Regular Story Content -->
-            <div v-if="!page.isEnvelope" class="story-content">
+            <div v-if="!page.isEnvelope" class="story-content" :class="{ 'glass-card': page.bgImage }">
               <div class="page-number-badge">{{ index + 1 }} / {{ storyPages.length }}</div>
               
               <h2 class="story-title">{{ page.title }}</h2>
               
-              <div class="story-image-container">
+              <!-- Image Slot for User to Paste Their Own Image -->
+              <div v-if="page.imageSlot" class="image-slot">
+                <div class="slot-placeholder">
+                  <span class="slot-icon">🖼️</span>
+                  <p class="slot-text">แปะรูปข้อความตรงนี้</p>
+                  <p class="slot-hint">(วางไฟล์รูปของคุณที่นี่)</p>
+                </div>
+              </div>
+              
+              <!-- Optional: Keep generating standard image if you want, but we rely on BG now -->
+              <div v-if="page.image" class="story-image-container">
                 <div class="image-glow"></div>
                 <img :src="page.image" :alt="page.title" class="story-image" />
               </div>
+
               
               <p class="story-text">{{ page.text }}</p>
             </div>
@@ -395,6 +428,47 @@ body {
   width: 100%;
   position: relative;
   overflow: hidden;
+}
+
+/* BACKGROUND IMAGE STYLES */
+.page-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
+  transition: transform 10s ease-in-out;
+}
+
+.animate-pan {
+  animation: bgPan 20s ease-in-out infinite alternate;
+}
+
+@keyframes bgPan {
+  0% { transform: scale(1.1) translate(0, 0); }
+  100% { transform: scale(1.2) translate(-2%, -2%); }
+}
+
+.bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35); /* Darken bg for text readability */
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+  color: white;
 }
 
 /* Floating Hearts Background */
@@ -946,6 +1020,72 @@ body {
   .letter-text {
     font-size: 0.9rem;
   }
+}
+
+/* ====== Image Slot Styles ====== */
+.image-slot {
+  width: 100%;
+  max-width: 400px;
+  min-height: 250px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 3px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  animation: imageSlotPulse 2s ease-in-out infinite;
+}
+
+.image-slot:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.02);
+}
+
+@keyframes imageSlotPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.slot-placeholder {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.slot-icon {
+  font-size: 3rem;
+  animation: iconFloat 2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.slot-text {
+  color: white;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slot-hint {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* ====== Floral Garden Background ====== */
